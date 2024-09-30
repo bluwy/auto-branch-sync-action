@@ -32,5 +32,5 @@ jobs:
           map: |
             / -> sync/root
             /test-fixtures -> sync/fixtures
-          skip-unchanged-check: ${{ inputs.skip-unchanged-check }}
-          dry-run: ${{ inputs.dry-run }}
+          skip-unchanged-check: ${{ inputs.skip-unchanged-check == true }}
+          dry-run: ${{ inputs.dry-run == true }}
