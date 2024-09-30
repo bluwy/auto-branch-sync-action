@@ -1,1 +1,1 @@
-console.log('test-fixtures-file')
+console.log('file')

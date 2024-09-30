@@ -108,14 +108,14 @@ git commit -am "Sync"
 git push -f origin HEAD:${targetBranch}
 git checkout ${process.env.GITHUB_REF_NAME}`)
       } else {
-        await exec('git', ['checkout', '-d', targetBranch])
-        await exec('git', ['checkout', '--orphan', targetBranch], o)
-        await exec('git', ['config', 'user.name', 'github-actions[bot]'], o)
+        await x('git', ['checkout', '-d', targetBranch], false)
+        await x('git', ['checkout', '--orphan', targetBranch])
+        await x('git', ['config', 'user.name', 'github-actions[bot]'])
         // prettier-ignore
-        await exec('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], o)
-        await exec('git', ['commit', '-am', 'Sync'], o)
-        await exec('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`], o)
-        await exec('git', ['checkout', process.env.GITHUB_REF_NAME], o)
+        await x('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'])
+        await x('git', ['commit', '-am', 'Sync'])
+        await x('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`])
+        await x('git', ['checkout', process.env.GITHUB_REF_NAME])
       }
     } else {
       core.debug(`Initializing git repository at "${sourcePath}"`)
@@ -126,24 +126,47 @@ git init
 git config user.name github-actions[bot]
 git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 git add .
-git commit -am "Sync"
+git commit -m "Sync"
 git remote add origin ${REPO_URL}
 git push -f origin HEAD:${targetBranch}`)
       } else {
-        await exec('git', ['init'], o)
-        await exec('git', ['config', 'user.name', 'github-actions[bot]'], o)
+        await x('git', ['init'])
+        await x('git', ['config', 'user.name', 'github-actions[bot]'])
         // prettier-ignore
-        await exec('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], o)
-        await exec('git', ['add', '.'], o)
-        await exec('git', ['commit', '-m', 'Sync'], o)
-        await exec('git', ['remote', 'add', 'origin', REPO_URL], o)
+        await x('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'])
+        await x('git', ['add', '.'])
+        await x('git', ['commit', '-m', 'Sync'])
+        await x('git', ['remote', 'add', 'origin', REPO_URL])
         core.debug(`Force pushing to "${targetBranch}" branch`)
-        await exec('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`], o)
+        await x('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`])
         await fs.rm(gitDir, { recursive: true, force: true })
       }
     }
   } finally {
     core.debug(`Changing directory back to "${originalCwd}"`)
     process.chdir(originalCwd)
+  }
+}
+
+/**
+ * @param {string} command
+ * @param {string[]} args
+ * @param {boolean} inherit
+ */
+async function x(command, args, inherit = true) {
+  core.startGroup(`> ${command} ${args.join(' ')}`)
+  try {
+    await exec(
+      command,
+      args,
+      inherit
+        ? {
+            nodeOptions: { stdio: ['ignore', 'inherit', 'inherit'] },
+            throwOnError: true,
+          }
+        : undefined,
+    )
+  } finally {
+    core.endGroup()
   }
 }
