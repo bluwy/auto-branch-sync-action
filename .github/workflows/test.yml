@@ -12,8 +12,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: ./
         with:
-          map: >
+          map: |
             / -> sync/root
             /test-fixtures -> sync/fixtures
