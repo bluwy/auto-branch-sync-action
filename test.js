@@ -6,7 +6,7 @@ process.env.INPUT_MAP = `
   / -> sync/root
   /test-fixtures -> sync/fixtures
   /test-fixtures/* -> sync/fixtures/* 
-  /test-fixtures/**/nested -> sync/fixtures/**
+  /test-fixtures/**/nested -> sync/fixtures-nested/**
 `
 process.env['INPUT_SKIP-UNCHANGED-CHECK'] = true
 process.env['INPUT_DRY-RUN'] = true
