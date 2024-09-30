@@ -1833,6 +1833,835 @@ class DecodedURL extends URL {
 
 /***/ }),
 
+/***/ 3023:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.callback = exports.promise = void 0;
+const walker_1 = __nccwpck_require__(8625);
+function promise(root, options) {
+    return new Promise((resolve, reject) => {
+        callback(root, options, (err, output) => {
+            if (err)
+                return reject(err);
+            resolve(output);
+        });
+    });
+}
+exports.promise = promise;
+function callback(root, options, callback) {
+    let walker = new walker_1.Walker(root, options, callback);
+    walker.start();
+}
+exports.callback = callback;
+
+
+/***/ }),
+
+/***/ 2047:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Counter = void 0;
+class Counter {
+    _files = 0;
+    _directories = 0;
+    set files(num) {
+        this._files = num;
+    }
+    get files() {
+        return this._files;
+    }
+    set directories(num) {
+        this._directories = num;
+    }
+    get directories() {
+        return this._directories;
+    }
+    /**
+     * @deprecated use `directories` instead
+     */
+    /* c8 ignore next 3 */
+    get dirs() {
+        return this._directories;
+    }
+}
+exports.Counter = Counter;
+
+
+/***/ }),
+
+/***/ 4785:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.build = void 0;
+const getArray = (paths) => {
+    return paths;
+};
+const getArrayGroup = () => {
+    return [""].slice(0, 0);
+};
+function build(options) {
+    return options.group ? getArrayGroup : getArray;
+}
+exports.build = build;
+
+
+/***/ }),
+
+/***/ 1936:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.build = void 0;
+const groupFiles = (groups, directory, files) => {
+    groups.push({ directory, files, dir: directory });
+};
+const empty = () => { };
+function build(options) {
+    return options.group ? groupFiles : empty;
+}
+exports.build = build;
+
+
+/***/ }),
+
+/***/ 6229:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.build = void 0;
+const onlyCountsSync = (state) => {
+    return state.counts;
+};
+const groupsSync = (state) => {
+    return state.groups;
+};
+const defaultSync = (state) => {
+    return state.paths;
+};
+const limitFilesSync = (state) => {
+    return state.paths.slice(0, state.options.maxFiles);
+};
+const onlyCountsAsync = (state, error, callback) => {
+    report(error, callback, state.counts, state.options.suppressErrors);
+    return null;
+};
+const defaultAsync = (state, error, callback) => {
+    report(error, callback, state.paths, state.options.suppressErrors);
+    return null;
+};
+const limitFilesAsync = (state, error, callback) => {
+    report(error, callback, state.paths.slice(0, state.options.maxFiles), state.options.suppressErrors);
+    return null;
+};
+const groupsAsync = (state, error, callback) => {
+    report(error, callback, state.groups, state.options.suppressErrors);
+    return null;
+};
+function report(error, callback, output, suppressErrors) {
+    if (error && !suppressErrors)
+        callback(error, output);
+    else
+        callback(null, output);
+}
+function build(options, isSynchronous) {
+    const { onlyCounts, group, maxFiles } = options;
+    if (onlyCounts)
+        return isSynchronous
+            ? onlyCountsSync
+            : onlyCountsAsync;
+    else if (group)
+        return isSynchronous
+            ? groupsSync
+            : groupsAsync;
+    else if (maxFiles)
+        return isSynchronous
+            ? limitFilesSync
+            : limitFilesAsync;
+    else
+        return isSynchronous
+            ? defaultSync
+            : defaultAsync;
+}
+exports.build = build;
+
+
+/***/ }),
+
+/***/ 8977:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.build = exports.joinDirectoryPath = exports.joinPathWithBasePath = void 0;
+const path_1 = __nccwpck_require__(6928);
+const utils_1 = __nccwpck_require__(2453);
+function joinPathWithBasePath(filename, directoryPath) {
+    return directoryPath + filename;
+}
+exports.joinPathWithBasePath = joinPathWithBasePath;
+function joinPathWithRelativePath(root, options) {
+    return function (filename, directoryPath) {
+        const sameRoot = directoryPath.startsWith(root);
+        if (sameRoot)
+            return directoryPath.replace(root, "") + filename;
+        else
+            return ((0, utils_1.convertSlashes)((0, path_1.relative)(root, directoryPath), options.pathSeparator) +
+                options.pathSeparator +
+                filename);
+    };
+}
+function joinPath(filename) {
+    return filename;
+}
+function joinDirectoryPath(filename, directoryPath, separator) {
+    return directoryPath + filename + separator;
+}
+exports.joinDirectoryPath = joinDirectoryPath;
+function build(root, options) {
+    const { relativePaths, includeBasePath } = options;
+    return relativePaths && root
+        ? joinPathWithRelativePath(root, options)
+        : includeBasePath
+            ? joinPathWithBasePath
+            : joinPath;
+}
+exports.build = build;
+
+
+/***/ }),
+
+/***/ 9819:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.build = void 0;
+function pushDirectoryWithRelativePath(root) {
+    return function (directoryPath, paths) {
+        paths.push(directoryPath.substring(root.length) || ".");
+    };
+}
+function pushDirectoryFilterWithRelativePath(root) {
+    return function (directoryPath, paths, filters) {
+        const relativePath = directoryPath.substring(root.length) || ".";
+        if (filters.every((filter) => filter(relativePath, true))) {
+            paths.push(relativePath);
+        }
+    };
+}
+const pushDirectory = (directoryPath, paths) => {
+    paths.push(directoryPath || ".");
+};
+const pushDirectoryFilter = (directoryPath, paths, filters) => {
+    const path = directoryPath || ".";
+    if (filters.every((filter) => filter(path, true))) {
+        paths.push(path);
+    }
+};
+const empty = () => { };
+function build(root, options) {
+    const { includeDirs, filters, relativePaths } = options;
+    if (!includeDirs)
+        return empty;
+    if (relativePaths)
+        return filters && filters.length
+            ? pushDirectoryFilterWithRelativePath(root)
+            : pushDirectoryWithRelativePath(root);
+    return filters && filters.length ? pushDirectoryFilter : pushDirectory;
+}
+exports.build = build;
+
+
+/***/ }),
+
+/***/ 7580:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.build = void 0;
+const pushFileFilterAndCount = (filename, _paths, counts, filters) => {
+    if (filters.every((filter) => filter(filename, false)))
+        counts.files++;
+};
+const pushFileFilter = (filename, paths, _counts, filters) => {
+    if (filters.every((filter) => filter(filename, false)))
+        paths.push(filename);
+};
+const pushFileCount = (_filename, _paths, counts, _filters) => {
+    counts.files++;
+};
+const pushFile = (filename, paths) => {
+    paths.push(filename);
+};
+const empty = () => { };
+function build(options) {
+    const { excludeFiles, filters, onlyCounts } = options;
+    if (excludeFiles)
+        return empty;
+    if (filters && filters.length) {
+        return onlyCounts ? pushFileFilterAndCount : pushFileFilter;
+    }
+    else if (onlyCounts) {
+        return pushFileCount;
+    }
+    else {
+        return pushFile;
+    }
+}
+exports.build = build;
+
+
+/***/ }),
+
+/***/ 2527:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.build = void 0;
+const fs_1 = __importDefault(__nccwpck_require__(9896));
+const resolveSymlinksAsync = function (path, state, callback) {
+    const { queue, options: { suppressErrors }, } = state;
+    queue.enqueue();
+    fs_1.default.stat(path, (error, stat) => {
+        if (error) {
+            queue.dequeue(suppressErrors ? null : error, state);
+            return;
+        }
+        callback(stat, path);
+        queue.dequeue(null, state);
+    });
+};
+const resolveSymlinksWithRealPathsAsync = function (path, state, callback) {
+    const { queue, options: { suppressErrors }, } = state;
+    queue.enqueue();
+    fs_1.default.realpath(path, (error, resolvedPath) => {
+        if (error) {
+            queue.dequeue(suppressErrors ? null : error, state);
+            return;
+        }
+        fs_1.default.lstat(resolvedPath, (_error, stat) => {
+            callback(stat, resolvedPath);
+            queue.dequeue(null, state);
+        });
+    });
+};
+const resolveSymlinksSync = function (path, state, callback) {
+    try {
+        const stat = fs_1.default.statSync(path);
+        callback(stat, path);
+    }
+    catch (e) {
+        if (!state.options.suppressErrors)
+            throw e;
+    }
+};
+const resolveSymlinksWithRealPathsSync = function (path, state, callback) {
+    try {
+        const resolvedPath = fs_1.default.realpathSync(path);
+        const stat = fs_1.default.lstatSync(resolvedPath);
+        callback(stat, resolvedPath);
+    }
+    catch (e) {
+        if (!state.options.suppressErrors)
+            throw e;
+    }
+};
+function build(options, isSynchronous) {
+    if (!options.resolveSymlinks || options.excludeSymlinks)
+        return null;
+    if (options.useRealPaths)
+        return isSynchronous
+            ? resolveSymlinksWithRealPathsSync
+            : resolveSymlinksWithRealPathsAsync;
+    return isSynchronous ? resolveSymlinksSync : resolveSymlinksAsync;
+}
+exports.build = build;
+
+
+/***/ }),
+
+/***/ 6150:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.build = void 0;
+const fs_1 = __importDefault(__nccwpck_require__(9896));
+const readdirOpts = { withFileTypes: true };
+const walkAsync = (state, directoryPath, currentDepth, callback) => {
+    state.queue.enqueue();
+    if (currentDepth < 0) {
+        state.queue.dequeue(null, state);
+        return;
+    }
+    state.counts.directories++;
+    // Perf: Node >= 10 introduced withFileTypes that helps us
+    // skip an extra fs.stat call.
+    fs_1.default.readdir(directoryPath || ".", readdirOpts, function process(error, entries = []) {
+        callback(entries, directoryPath, currentDepth);
+        state.queue.dequeue(state.options.suppressErrors ? null : error, state);
+    });
+};
+const walkSync = (state, directoryPath, currentDepth, callback) => {
+    if (currentDepth < 0) {
+        return;
+    }
+    state.counts.directories++;
+    let entries = [];
+    try {
+        entries = fs_1.default.readdirSync(directoryPath || ".", readdirOpts);
+    }
+    catch (e) {
+        if (!state.options.suppressErrors)
+            throw e;
+    }
+    callback(entries, directoryPath, currentDepth);
+};
+function build(isSynchronous) {
+    return isSynchronous ? walkSync : walkAsync;
+}
+exports.build = build;
+
+
+/***/ }),
+
+/***/ 8352:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Queue = void 0;
+/**
+ * This is a custom stateless queue to track concurrent async fs calls.
+ * It increments a counter whenever a call is queued and decrements it
+ * as soon as it completes. When the counter hits 0, it calls onQueueEmpty.
+ */
+class Queue {
+    onQueueEmpty;
+    count = 0;
+    constructor(onQueueEmpty) {
+        this.onQueueEmpty = onQueueEmpty;
+    }
+    enqueue() {
+        this.count++;
+    }
+    dequeue(error, output) {
+        if (--this.count === 0 || error)
+            this.onQueueEmpty(error, output);
+    }
+}
+exports.Queue = Queue;
+
+
+/***/ }),
+
+/***/ 6740:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.sync = void 0;
+const walker_1 = __nccwpck_require__(8625);
+function sync(root, options) {
+    const walker = new walker_1.Walker(root, options);
+    return walker.start();
+}
+exports.sync = sync;
+
+
+/***/ }),
+
+/***/ 8625:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Walker = void 0;
+const path_1 = __nccwpck_require__(6928);
+const utils_1 = __nccwpck_require__(2453);
+const joinPath = __importStar(__nccwpck_require__(8977));
+const pushDirectory = __importStar(__nccwpck_require__(9819));
+const pushFile = __importStar(__nccwpck_require__(7580));
+const getArray = __importStar(__nccwpck_require__(4785));
+const groupFiles = __importStar(__nccwpck_require__(1936));
+const resolveSymlink = __importStar(__nccwpck_require__(2527));
+const invokeCallback = __importStar(__nccwpck_require__(6229));
+const walkDirectory = __importStar(__nccwpck_require__(6150));
+const queue_1 = __nccwpck_require__(8352);
+const counter_1 = __nccwpck_require__(2047);
+class Walker {
+    root;
+    isSynchronous;
+    state;
+    joinPath;
+    pushDirectory;
+    pushFile;
+    getArray;
+    groupFiles;
+    resolveSymlink;
+    walkDirectory;
+    callbackInvoker;
+    constructor(root, options, callback) {
+        this.isSynchronous = !callback;
+        this.callbackInvoker = invokeCallback.build(options, this.isSynchronous);
+        this.state = {
+            // Perf: we explicitly tell the compiler to optimize for String arrays
+            paths: [""].slice(0, 0),
+            groups: [],
+            counts: new counter_1.Counter(),
+            options,
+            queue: new queue_1.Queue((error, state) => this.callbackInvoker(state, error, callback)),
+        };
+        this.root = (0, utils_1.normalizePath)(root, this.state.options);
+        /*
+         * Perf: We conditionally change functions according to options. This gives a slight
+         * performance boost. Since these functions are so small, they are automatically inlined
+         * by the javascript engine so there's no function call overhead (in most cases).
+         */
+        this.joinPath = joinPath.build(this.root, options);
+        this.pushDirectory = pushDirectory.build(this.root, options);
+        this.pushFile = pushFile.build(options);
+        this.getArray = getArray.build(options);
+        this.groupFiles = groupFiles.build(options);
+        this.resolveSymlink = resolveSymlink.build(options, this.isSynchronous);
+        this.walkDirectory = walkDirectory.build(this.isSynchronous);
+    }
+    start() {
+        this.walkDirectory(this.state, this.root, this.state.options.maxDepth, this.walk);
+        return this.isSynchronous ? this.callbackInvoker(this.state, null) : null;
+    }
+    walk = (entries, directoryPath, depth) => {
+        const { paths, options: { filters, resolveSymlinks, excludeSymlinks, exclude, maxFiles, signal, }, } = this.state;
+        if ((signal && signal.aborted) || (maxFiles && paths.length > maxFiles))
+            return;
+        this.pushDirectory(directoryPath, paths, filters);
+        const files = this.getArray(this.state.paths);
+        for (let i = 0; i < entries.length; ++i) {
+            const entry = entries[i];
+            if (entry.isFile() ||
+                (entry.isSymbolicLink() && !resolveSymlinks && !excludeSymlinks)) {
+                const filename = this.joinPath(entry.name, directoryPath);
+                this.pushFile(filename, files, this.state.counts, filters);
+            }
+            else if (entry.isDirectory()) {
+                let path = joinPath.joinDirectoryPath(entry.name, directoryPath, this.state.options.pathSeparator);
+                if (exclude && exclude(entry.name, path))
+                    continue;
+                this.walkDirectory(this.state, path, depth - 1, this.walk);
+            }
+            else if (entry.isSymbolicLink() && this.resolveSymlink) {
+                let path = joinPath.joinPathWithBasePath(entry.name, directoryPath);
+                this.resolveSymlink(path, this.state, (stat, resolvedPath) => {
+                    if (stat.isDirectory()) {
+                        resolvedPath = (0, utils_1.normalizePath)(resolvedPath, this.state.options);
+                        if (exclude && exclude(entry.name, resolvedPath))
+                            return;
+                        this.walkDirectory(this.state, resolvedPath, depth - 1, this.walk);
+                    }
+                    else {
+                        const filename = (0, path_1.basename)(resolvedPath);
+                        const directoryPath = (0, utils_1.normalizePath)((0, path_1.dirname)(resolvedPath), this.state.options);
+                        resolvedPath = this.joinPath(filename, directoryPath);
+                        this.pushFile(resolvedPath, files, this.state.counts, filters);
+                    }
+                });
+            }
+        }
+        this.groupFiles(this.state.groups, directoryPath, files);
+    };
+}
+exports.Walker = Walker;
+
+
+/***/ }),
+
+/***/ 7934:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.APIBuilder = void 0;
+const async_1 = __nccwpck_require__(3023);
+const sync_1 = __nccwpck_require__(6740);
+class APIBuilder {
+    root;
+    options;
+    constructor(root, options) {
+        this.root = root;
+        this.options = options;
+    }
+    withPromise() {
+        return (0, async_1.promise)(this.root, this.options);
+    }
+    withCallback(cb) {
+        (0, async_1.callback)(this.root, this.options, cb);
+    }
+    sync() {
+        return (0, sync_1.sync)(this.root, this.options);
+    }
+}
+exports.APIBuilder = APIBuilder;
+
+
+/***/ }),
+
+/***/ 3892:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Builder = void 0;
+const path_1 = __nccwpck_require__(6928);
+const api_builder_1 = __nccwpck_require__(7934);
+var pm = null;
+/* c8 ignore next 6 */
+try {
+    __WEBPACK_EXTERNAL_createRequire(import.meta.url).resolve("picomatch");
+    pm = __nccwpck_require__(9502);
+}
+catch (_e) {
+    // do nothing
+}
+class Builder {
+    globCache = {};
+    options = {
+        maxDepth: Infinity,
+        suppressErrors: true,
+        pathSeparator: path_1.sep,
+        filters: [],
+    };
+    globFunction;
+    constructor(options) {
+        this.options = { ...this.options, ...options };
+        this.globFunction = this.options.globFunction;
+    }
+    group() {
+        this.options.group = true;
+        return this;
+    }
+    withPathSeparator(separator) {
+        this.options.pathSeparator = separator;
+        return this;
+    }
+    withBasePath() {
+        this.options.includeBasePath = true;
+        return this;
+    }
+    withRelativePaths() {
+        this.options.relativePaths = true;
+        return this;
+    }
+    withDirs() {
+        this.options.includeDirs = true;
+        return this;
+    }
+    withMaxDepth(depth) {
+        this.options.maxDepth = depth;
+        return this;
+    }
+    withMaxFiles(limit) {
+        this.options.maxFiles = limit;
+        return this;
+    }
+    withFullPaths() {
+        this.options.resolvePaths = true;
+        this.options.includeBasePath = true;
+        return this;
+    }
+    withErrors() {
+        this.options.suppressErrors = false;
+        return this;
+    }
+    withSymlinks({ resolvePaths = true } = {}) {
+        this.options.resolveSymlinks = true;
+        this.options.useRealPaths = resolvePaths;
+        return this.withFullPaths();
+    }
+    withAbortSignal(signal) {
+        this.options.signal = signal;
+        return this;
+    }
+    normalize() {
+        this.options.normalizePath = true;
+        return this;
+    }
+    filter(predicate) {
+        this.options.filters.push(predicate);
+        return this;
+    }
+    onlyDirs() {
+        this.options.excludeFiles = true;
+        this.options.includeDirs = true;
+        return this;
+    }
+    exclude(predicate) {
+        this.options.exclude = predicate;
+        return this;
+    }
+    onlyCounts() {
+        this.options.onlyCounts = true;
+        return this;
+    }
+    crawl(root) {
+        return new api_builder_1.APIBuilder(root || ".", this.options);
+    }
+    withGlobFunction(fn) {
+        // cast this since we don't have the new type params yet
+        this.globFunction = fn;
+        return this;
+    }
+    /**
+     * @deprecated Pass options using the constructor instead:
+     * ```ts
+     * new fdir(options).crawl("/path/to/root");
+     * ```
+     * This method will be removed in v7.0
+     */
+    /* c8 ignore next 4 */
+    crawlWithOptions(root, options) {
+        this.options = { ...this.options, ...options };
+        return new api_builder_1.APIBuilder(root || ".", this.options);
+    }
+    glob(...patterns) {
+        if (this.globFunction) {
+            return this.globWithOptions(patterns);
+        }
+        return this.globWithOptions(patterns, ...[{ dot: true }]);
+    }
+    globWithOptions(patterns, ...options) {
+        const globFn = (this.globFunction || pm);
+        /* c8 ignore next 5 */
+        if (!globFn) {
+            throw new Error('Please specify a glob function to use glob matching.');
+        }
+        var isMatch = this.globCache[patterns.join("\0")];
+        if (!isMatch) {
+            isMatch = globFn(patterns, ...options);
+            this.globCache[patterns.join("\0")] = isMatch;
+        }
+        this.options.filters.push((path) => isMatch(path));
+        return this;
+    }
+}
+exports.Builder = Builder;
+
+
+/***/ }),
+
+/***/ 1708:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.fdir = void 0;
+const builder_1 = __nccwpck_require__(3892);
+Object.defineProperty(exports, "fdir", ({ enumerable: true, get: function () { return builder_1.Builder; } }));
+__exportStar(__nccwpck_require__(3961), exports);
+
+
+/***/ }),
+
+/***/ 3961:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+
+/***/ }),
+
+/***/ 2453:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.normalizePath = exports.convertSlashes = exports.cleanPath = void 0;
+const path_1 = __nccwpck_require__(6928);
+function cleanPath(path) {
+    let normalized = (0, path_1.normalize)(path);
+    // we have to remove the last path separator
+    // to account for / root path
+    if (normalized.length > 1 && normalized[normalized.length - 1] === path_1.sep)
+        normalized = normalized.substring(0, normalized.length - 1);
+    return normalized;
+}
+exports.cleanPath = cleanPath;
+const SLASHES_REGEX = /[\\/]/g;
+function convertSlashes(path, separator) {
+    return path.replace(SLASHES_REGEX, separator);
+}
+exports.convertSlashes = convertSlashes;
+function normalizePath(path, options) {
+    const { resolvePaths, normalizePath, pathSeparator } = options;
+    const pathNeedsCleaning = (process.platform === "win32" && path.includes("/")) ||
+        path.startsWith(".");
+    if (resolvePaths)
+        path = (0, path_1.resolve)(path);
+    if (normalizePath || pathNeedsCleaning)
+        path = cleanPath(path);
+    if (path === ".")
+        return "";
+    const needsSeperator = path[path.length - 1] !== pathSeparator;
+    return convertSlashes(needsSeperator ? path + pathSeparator : path, pathSeparator);
+}
+exports.normalizePath = normalizePath;
+
+
+/***/ }),
+
 /***/ 7987:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -24831,6 +25660,14 @@ exports["default"] = _default;
 
 /***/ }),
 
+/***/ 9502:
+/***/ ((module) => {
+
+module.exports = eval("require")("picomatch");
+
+
+/***/ }),
+
 /***/ 2613:
 /***/ ((module) => {
 
@@ -26688,6 +27525,8 @@ const external_node_fs_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import
 const external_node_path_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:path");
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+core@1.10.1/node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(7627);
+// EXTERNAL MODULE: ./node_modules/.pnpm/fdir@6.4.0/node_modules/fdir/dist/index.js
+var dist = __nccwpck_require__(1708);
 ;// CONCATENATED MODULE: external "node:module"
 const external_node_module_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:module");
 ;// CONCATENATED MODULE: external "child_process"
@@ -27277,6 +28116,7 @@ var R = class {
 
 
 
+
 const REPO_URL = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}`
 
 main()
@@ -27287,7 +28127,8 @@ async function main() {
   const dryRun = core.getBooleanInput('dry-run')
   const ghToken = core.getInput('token')
 
-  for (const line of mapLines) {
+  for (let i = 0; i < mapLines.length; i++) {
+    const line = mapLines[i]
     let [sourceDir, targetBranch] = line.split('->')
 
     sourceDir = sourceDir.trim()
@@ -27299,6 +28140,12 @@ async function main() {
     targetBranch = targetBranch?.trim()
     if (!targetBranch) {
       core.warning(`Invalid line: "${line}". Second parameter is empty`)
+      continue
+    }
+
+    if (sourceDir.includes('*')) {
+      const additionalLinesToInject = expandGlobLine(sourceDir, targetBranch)
+      mapLines.splice(i + 1, 0, ...additionalLinesToInject)
       continue
     }
 
@@ -27450,5 +28297,84 @@ async function index_x(command, args, inherit = true) {
   } finally {
     core.endGroup()
   }
+}
+
+/**
+ * @param {string} sourceDir
+ * @param {string} targetBranch
+ */
+function expandGlobLine(sourceDir, targetBranch) {
+  const regex = new RegExp(
+    sourceDir
+      .replace(/\*\*\//g, '(?:(.*)/)?')
+      .replace(/\*\*/g, '(.*)')
+      .replace(/\*/g, '([^/]+)'),
+  )
+
+  // Get parent directories before the first * so we can use it to exclude out directories earlier
+  const sourceParentDirs = getParentDirs(sourceDir, process.cwd())
+
+  // Do the globbing!
+  const result = new dist.fdir()
+    .withRelativePaths()
+    .withPathSeparator('/')
+    .onlyDirs()
+    .exclude((_, dirPath) => {
+      return !sourceParentDirs.some((p) => dirPath.startsWith(p))
+    })
+    .filter((p, isDir) => {
+      return isDir && regex.test('/' + p.replace(/\\/g, '/'))
+    })
+    .crawl(process.cwd())
+    .sync()
+
+  const additionalLinesToInject = []
+  for (const matchedDir of result) {
+    // Normalize slash
+    const matchedSourceDir = '/' + matchedDir.replace(/\\/g, '/')
+    // Get the matched groups value
+    const matchedGroups = regex.exec(matchedSourceDir)
+    // Iterate target segment, perform replacement for each segment
+    // that contains * with the matched group value
+    const targetBranchSegments = targetBranch.split('/')
+    let replacementIndex = 1
+    for (let j = 0; j < targetBranchSegments.length; j++) {
+      if (targetBranchSegments[j].includes('*')) {
+        targetBranchSegments[j] = targetBranchSegments[j].replace(
+          /\*+/g,
+          () => matchedGroups[replacementIndex++],
+        )
+      }
+    }
+    // Get new target branch and inject it
+    const newTargetBranch = targetBranchSegments.join('/')
+    additionalLinesToInject.push(`${matchedSourceDir} -> ${newTargetBranch}`)
+    // TODO: detect abnormal mappings (e.g. inbalance or unsufficient *)
+  }
+  core.debug(
+    `Injecting additional mappings:\n${additionalLinesToInject.join('\n')}`,
+  )
+  return additionalLinesToInject
+}
+
+/**
+ * @param {string} sourceDir
+ * @param {string} cwd
+ */
+function getParentDirs(sourceDir, cwd) {
+  if (sourceDir[0] === '/') {
+    sourceDir = sourceDir.slice(1)
+  }
+
+  const segments = sourceDir.split('/')
+  const firstStar = segments.findIndex((s) => s.includes('*'))
+  segments.splice(firstStar)
+
+  /** @type {string[]} */
+  const parentDirs = []
+  for (let i = 0; i < segments.length; i++) {
+    parentDirs.push(external_node_path_namespaceObject.join(cwd, segments.slice(0, i + 1).join('/'), '/'))
+  }
+  return parentDirs
 }
 

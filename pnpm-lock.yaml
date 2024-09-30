@@ -11,6 +11,9 @@ importers:
       '@actions/core':
         specifier: ^1.10.1
         version: 1.10.1
+      fdir:
+        specifier: ^6.4.0
+        version: 6.4.0
       tinyexec:
         specifier: ^0.3.0
         version: 0.3.0
@@ -37,6 +40,14 @@ packages:
   '@vercel/ncc@0.38.2':
     resolution: {integrity: sha512-3yel3jaxUg9pHBv4+KeC9qlbdZPug+UMtUOlhvpDYCMSgcNSrS2Hv1LoqMsOV7hf2lYscx+BESfJOIla1WsmMQ==}
     hasBin: true
+
+  fdir@6.4.0:
+    resolution: {integrity: sha512-3oB133prH1o4j/L5lLW7uOCF1PlD+/It2L0eL/iAqWMB91RBbqTewABqxhj0ibBd90EEmWZq7ntIWzVaWcXTGQ==}
+    peerDependencies:
+      picomatch: ^3 || ^4
+    peerDependenciesMeta:
+      picomatch:
+        optional: true
 
   prettier@3.3.3:
     resolution: {integrity: sha512-i2tDNA0O5IrMO757lfrdQZCc2jPNDVntV0m/+4whiDfWaTKfMNgR7Qz0NAeGz/nRqF4m5/6CLzbP4/liHt12Ew==}
@@ -73,6 +84,8 @@ snapshots:
   '@fastify/busboy@2.1.1': {}
 
   '@vercel/ncc@0.38.2': {}
+
+  fdir@6.4.0: {}
 
   prettier@3.3.3: {}
 

@@ -5,6 +5,8 @@ process.env.GITHUB_SHA = 'abc123'
 process.env.INPUT_MAP = `
   / -> sync/root
   /test-fixtures -> sync/fixtures
+  /test-fixtures/* -> sync/fixtures/* 
+  /test-fixtures/**/nested -> sync/fixtures/**
 `
 process.env['INPUT_SKIP-UNCHANGED-CHECK'] = true
 process.env['INPUT_DRY-RUN'] = true
