@@ -27369,7 +27369,7 @@ async function gitForcePush(sourceDir, targetBranch, dryRun) {
     // Re-use existing git if available (e.g. root)
     if (external_node_fs_namespaceObject.existsSync(gitDir)) {
       core.debug(`Found existing git directory at "${gitDir}"`)
-      core.debug(`Force pushing from to "${targetBranch}" branch`)
+      core.debug(`Force pushing to "${targetBranch}" branch`)
       if (dryRun) {
         core.info(`\
 [dry run]
@@ -27396,6 +27396,9 @@ git checkout ${process.env.GITHUB_REF_NAME}`)
         core.info(`\
 [dry run]
 git init
+git config user.name github-actions[bot]
+git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+git add .
 git commit -am "Sync"
 git remote add origin ${REPO_URL}
 git push -f origin HEAD:${targetBranch}`)
@@ -27404,9 +27407,10 @@ git push -f origin HEAD:${targetBranch}`)
         await be('git', ['config', 'user.name', 'github-actions[bot]'], o)
         // prettier-ignore
         await be('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], o)
-        await be('git', ['commit', '-am', 'Sync'], o)
+        await be('git', ['add', '.'], o)
+        await be('git', ['commit', '-m', 'Sync'], o)
         await be('git', ['remote', 'add', 'origin', REPO_URL], o)
-        core.debug(`Force pushing from to "${targetBranch}" branch`)
+        core.debug(`Force pushing to "${targetBranch}" branch`)
         await be('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`], o)
         await promises_namespaceObject.rm(gitDir, { recursive: true, force: true })
       }
