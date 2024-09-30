@@ -44,16 +44,13 @@ async function main() {
       !(await isGitBranchExists(targetBranch)) &&
       !(await hasGitChanged(sourceDir))
     ) {
-      core.info(`! Skip "${sourceDir}" directory as unchanged`)
+      core.info(`Skip "${sourceDir}" directory as unchanged`)
       continue
     }
 
-    core.startGroup(`Sync "${sourceDir}" directory to "${targetBranch}" branch`)
-    try {
-      await gitForcePush(sourceDir, targetBranch, dryRun, ghToken)
-    } finally {
-      core.endGroup()
-    }
+    core.info(`Sync "${sourceDir}" directory to "${targetBranch}" branch`)
+    await gitForcePush(sourceDir, targetBranch, dryRun, ghToken)
+    console.log()
   }
 }
 
