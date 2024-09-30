@@ -13,7 +13,6 @@ async function main() {
   const skipUnchangedCheck = core.getBooleanInput('skip-unchanged-check')
   const dryRun = core.getBooleanInput('dry-run')
 
-
   for (const line of mapLines) {
     let [sourceDir, targetBranch] = line.split('->')
 
@@ -47,6 +46,9 @@ async function main() {
 async function hasGitChanged(sourceDir) {
   if (sourceDir[0] === '/') {
     sourceDir = sourceDir.slice(1)
+  }
+  if (sourceDir === '') {
+    sourceDir = '.'
   }
 
   const result = exec('git', [
