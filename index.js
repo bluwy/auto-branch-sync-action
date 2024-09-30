@@ -18,24 +18,24 @@ async function main() {
 
     sourceDir = sourceDir.trim()
     if (!sourceDir) {
-      core.warning(`Invalid line: ${line}. First parameter is empty`)
+      core.warning(`Invalid line: "${line}". First parameter is empty`)
       continue
     }
 
     targetBranch = targetBranch?.trim()
     if (!targetBranch) {
-      core.warning(`Invalid line: ${line}. Second parameter is empty`)
+      core.warning(`Invalid line: "${line}". Second parameter is empty`)
       continue
     }
 
     if (skipUnchangedCheck) {
       core.debug('Skipping unchanged check')
     } else if (!(await hasGitChanged(sourceDir))) {
-      core.info(`Skipping ${sourceDir} because it has not changed`)
+      core.info(`Skipping "${sourceDir}" directory because it has not changed`)
       continue
     }
 
-    core.info(`Syncing ${sourceDir} to ${targetBranch}`)
+    core.info(`Syncing "${sourceDir}" directory to "${targetBranch}" branch`)
     await gitForcePush(sourceDir, targetBranch, dryRun)
   }
 }
@@ -73,7 +73,7 @@ async function gitForcePush(sourceDir, targetBranch, dryRun) {
     throwOnError: true,
   }
 
-  core.debug(`Changing directory to ${sourcePath}`)
+  core.debug(`Changing directory to "${sourcePath}"`)
   const originalCwd = process.cwd()
   process.chdir(sourcePath)
 
@@ -81,34 +81,48 @@ async function gitForcePush(sourceDir, targetBranch, dryRun) {
 
   // Re-use existing git if available (e.g. root)
   if (fss.existsSync(gitDir)) {
-    core.debug(`Found existing git directory at ${gitDir}`)
-    core.debug(`Force pushing from to ${targetBranch}`)
+    core.debug(`Found existing git directory at "${gitDir}"`)
+    core.debug(`Force pushing from to "${targetBranch}" branch`)
     if (dryRun) {
-      core.info(`[dry run] git push -f origin HEAD:${targetBranch}`)
+      core.info(`\
+[dry run]
+git checkout -d ${targetBranch}
+git checkout --orphan ${targetBranch}
+git config user.name github-actions[bot]
+git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+git commit -am "Sync"
+git push -f origin HEAD:${targetBranch}`)
     } else {
+      await exec('git', ['checkout', '-d', targetBranch])
+      await exec('git', ['checkout', '--orphan', targetBranch], o)
+      await exec('git', ['config', 'user.name', 'github-actions[bot]'], o)
+      // prettier-ignore
+      await exec('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], o)
+      await exec('git', ['commit', '-am', 'Sync'], o)
       await exec('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`], o)
     }
   } else {
-    core.debug(`Initializing git repository at ${sourcePath}`)
+    core.debug(`Initializing git repository at "${sourcePath}"`)
     if (dryRun) {
       core.info(`\
 [dry run]
 git init
-git add .
-git commit -m "Sync"
+git commit -am "Sync"
 git remote add origin ${REPO_URL}
 git push -f origin HEAD:${targetBranch}`)
     } else {
       await exec('git', ['init'], o)
-      await exec('git', ['add', '.'], o)
-      await exec('git', ['commit', '-m', 'Sync'], o)
+      await exec('git', ['config', 'user.name', 'github-actions[bot]'], o)
+      // prettier-ignore
+      await exec('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], o)
+      await exec('git', ['commit', '-am', 'Sync'], o)
       await exec('git', ['remote', 'add', 'origin', REPO_URL], o)
-      core.debug(`Force pushing from to ${targetBranch}`)
+      core.debug(`Force pushing from to "${targetBranch}" branch`)
       await exec('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`], o)
       await fs.rm(gitDir, { recursive: true, force: true })
     }
   }
 
-  core.debug(`Changing directory back to ${originalCwd}`)
+  core.debug(`Changing directory back to "${originalCwd}"`)
   process.chdir(originalCwd)
 }
