@@ -1,5 +1,6 @@
 process.env.GITHUB_SERVER_URL = 'https://github.com'
 process.env.GITHUB_REPOSITORY = 'bluwy/auto-branch-sync-action'
+process.env.GITHUB_REF_NAME = 'master'
 process.env.INPUT_MAP = `
   / -> sync/root
   /test-fixtures -> sync/fixtures

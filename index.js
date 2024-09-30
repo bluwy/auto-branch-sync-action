@@ -96,7 +96,7 @@ async function gitForcePush(sourceDir, targetBranch, dryRun) {
     // Re-use existing git if available (e.g. root)
     if (fss.existsSync(gitDir)) {
       core.debug(`Found existing git directory at "${gitDir}"`)
-      core.debug(`Force pushing from to "${targetBranch}" branch`)
+      core.debug(`Force pushing to "${targetBranch}" branch`)
       if (dryRun) {
         core.info(`\
 [dry run]
@@ -123,6 +123,9 @@ git checkout ${process.env.GITHUB_REF_NAME}`)
         core.info(`\
 [dry run]
 git init
+git config user.name github-actions[bot]
+git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+git add .
 git commit -am "Sync"
 git remote add origin ${REPO_URL}
 git push -f origin HEAD:${targetBranch}`)
@@ -131,9 +134,10 @@ git push -f origin HEAD:${targetBranch}`)
         await exec('git', ['config', 'user.name', 'github-actions[bot]'], o)
         // prettier-ignore
         await exec('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], o)
-        await exec('git', ['commit', '-am', 'Sync'], o)
+        await exec('git', ['add', '.'], o)
+        await exec('git', ['commit', '-m', 'Sync'], o)
         await exec('git', ['remote', 'add', 'origin', REPO_URL], o)
-        core.debug(`Force pushing from to "${targetBranch}" branch`)
+        core.debug(`Force pushing to "${targetBranch}" branch`)
         await exec('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`], o)
         await fs.rm(gitDir, { recursive: true, force: true })
       }
