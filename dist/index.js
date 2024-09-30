@@ -27394,13 +27394,16 @@ git checkout ${process.env.GITHUB_REF_NAME}`)
       }
     } else {
       core.debug(`Initializing git repository at "${sourcePath}"`)
+      // Custom git init requires own authorization setup (inspired from actions/checkout)
+      const repoUrl = new URL(REPO_URL)
+      repoUrl.username = 'x-access-token'
+      repoUrl.password = ghToken
       if (dryRun) {
         core.info(`\
 [dry run]
 git init -b ${targetBranch}
 git config user.name github-actions[bot]
 git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-git config http.${process.env.GITHUB_SERVER_URL}/.extraheader AUTHORIZATION: basic ***
 git add .
 git commit -m "Sync"
 git remote add origin ${REPO_URL}
@@ -27410,12 +27413,9 @@ git push -f origin HEAD:${targetBranch}`)
         await index_x('git', ['config', 'user.name', 'github-actions[bot]'])
         // prettier-ignore
         await index_x('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'])
-        // Custom git init requires own authorization setup (inspired from actions/checkout)
-        // prettier-ignore
-        await index_x('git', ['config', `http.${process.env.GITHUB_SERVER_URL}/.extraheader`, `AUTHORIZATION: basic ${ghToken}`])
         await index_x('git', ['add', '.'])
         await index_x('git', ['commit', '-m', 'Sync'])
-        await index_x('git', ['remote', 'add', 'origin', REPO_URL])
+        await index_x('git', ['remote', 'add', 'origin', repoUrl])
         core.debug(`Force pushing to "${targetBranch}" branch`)
         await index_x('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`])
         await promises_namespaceObject.rm(gitDir, { recursive: true, force: true })
