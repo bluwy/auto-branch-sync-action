@@ -27365,51 +27365,55 @@ async function gitForcePush(sourceDir, targetBranch, dryRun) {
 
   const gitDir = external_node_path_namespaceObject.join(sourcePath, '.git')
 
-  // Re-use existing git if available (e.g. root)
-  if (external_node_fs_namespaceObject.existsSync(gitDir)) {
-    core.debug(`Found existing git directory at "${gitDir}"`)
-    core.debug(`Force pushing from to "${targetBranch}" branch`)
-    if (dryRun) {
-      core.info(`\
+  try {
+    // Re-use existing git if available (e.g. root)
+    if (external_node_fs_namespaceObject.existsSync(gitDir)) {
+      core.debug(`Found existing git directory at "${gitDir}"`)
+      core.debug(`Force pushing from to "${targetBranch}" branch`)
+      if (dryRun) {
+        core.info(`\
 [dry run]
 git checkout -d ${targetBranch}
 git checkout --orphan ${targetBranch}
 git config user.name github-actions[bot]
 git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 git commit -am "Sync"
-git push -f origin HEAD:${targetBranch}`)
+git push -f origin HEAD:${targetBranch}
+git checkout ${process.env.GITHUB_REF_NAME}`)
+      } else {
+        await be('git', ['checkout', '-d', targetBranch])
+        await be('git', ['checkout', '--orphan', targetBranch], o)
+        await be('git', ['config', 'user.name', 'github-actions[bot]'], o)
+        // prettier-ignore
+        await be('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], o)
+        await be('git', ['commit', '-am', 'Sync'], o)
+        await be('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`], o)
+        await be('git', ['checkout', process.env.GITHUB_REF_NAME], o)
+      }
     } else {
-      await be('git', ['checkout', '-d', targetBranch])
-      await be('git', ['checkout', '--orphan', targetBranch], o)
-      await be('git', ['config', 'user.name', 'github-actions[bot]'], o)
-      // prettier-ignore
-      await be('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], o)
-      await be('git', ['commit', '-am', 'Sync'], o)
-      await be('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`], o)
-    }
-  } else {
-    core.debug(`Initializing git repository at "${sourcePath}"`)
-    if (dryRun) {
-      core.info(`\
+      core.debug(`Initializing git repository at "${sourcePath}"`)
+      if (dryRun) {
+        core.info(`\
 [dry run]
 git init
 git commit -am "Sync"
 git remote add origin ${REPO_URL}
 git push -f origin HEAD:${targetBranch}`)
-    } else {
-      await be('git', ['init'], o)
-      await be('git', ['config', 'user.name', 'github-actions[bot]'], o)
-      // prettier-ignore
-      await be('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], o)
-      await be('git', ['commit', '-am', 'Sync'], o)
-      await be('git', ['remote', 'add', 'origin', REPO_URL], o)
-      core.debug(`Force pushing from to "${targetBranch}" branch`)
-      await be('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`], o)
-      await promises_namespaceObject.rm(gitDir, { recursive: true, force: true })
+      } else {
+        await be('git', ['init'], o)
+        await be('git', ['config', 'user.name', 'github-actions[bot]'], o)
+        // prettier-ignore
+        await be('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], o)
+        await be('git', ['commit', '-am', 'Sync'], o)
+        await be('git', ['remote', 'add', 'origin', REPO_URL], o)
+        core.debug(`Force pushing from to "${targetBranch}" branch`)
+        await be('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`], o)
+        await promises_namespaceObject.rm(gitDir, { recursive: true, force: true })
+      }
     }
+  } finally {
+    core.debug(`Changing directory back to "${originalCwd}"`)
+    process.chdir(originalCwd)
   }
-
-  core.debug(`Changing directory back to "${originalCwd}"`)
-  process.chdir(originalCwd)
 }
 
