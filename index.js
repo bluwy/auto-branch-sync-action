@@ -51,14 +51,11 @@ async function hasGitChanged(sourceDir) {
     sourceDir = '.'
   }
 
-  const result = exec('git', [
-    'diff',
-    '--quiet',
-    'HEAD',
-    'HEAD~1',
-    '--',
-    sourceDir,
-  ])
+  const result = exec(
+    'git',
+    ['diff', '--quiet', 'HEAD', 'HEAD~1', '--', sourceDir],
+    { nodeOptions: { stdio: ['ignore', 'inherit', 'inherit'] } },
+  )
 
   await result
   return result.exitCode === 1
@@ -71,6 +68,10 @@ async function hasGitChanged(sourceDir) {
  */
 async function gitForcePush(sourceDir, targetBranch, dryRun) {
   const sourcePath = path.join(process.cwd(), sourceDir)
+  const o = {
+    nodeOptions: { stdio: ['ignore', 'inherit', 'inherit'] },
+    throwOnError: true,
+  }
 
   core.debug(`Changing directory to ${sourcePath}`)
   const originalCwd = process.cwd()
@@ -85,7 +86,7 @@ async function gitForcePush(sourceDir, targetBranch, dryRun) {
     if (dryRun) {
       core.info(`[dry run] git push -f origin HEAD:${targetBranch}`)
     } else {
-      await exec('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`])
+      await exec('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`], o)
     }
   } else {
     core.debug(`Initializing git repository at ${sourcePath}`)
@@ -98,12 +99,12 @@ git commit -m "Sync"
 git remote add origin ${REPO_URL}
 git push -f origin HEAD:${targetBranch}`)
     } else {
-      await exec('git', ['init'])
-      await exec('git', ['add', '.'])
-      await exec('git', ['commit', '-m', 'Sync'])
-      await exec('git', ['remote', 'add', 'origin', REPO_URL])
+      await exec('git', ['init'], o)
+      await exec('git', ['add', '.'], o)
+      await exec('git', ['commit', '-m', 'Sync'], o)
+      await exec('git', ['remote', 'add', 'origin', REPO_URL], o)
       core.debug(`Force pushing from to ${targetBranch}`)
-      await exec('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`])
+      await exec('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`], o)
       await fs.rm(gitDir, { recursive: true, force: true })
     }
   }

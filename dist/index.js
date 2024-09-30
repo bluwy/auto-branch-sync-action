@@ -27324,14 +27324,11 @@ async function hasGitChanged(sourceDir) {
     sourceDir = '.'
   }
 
-  const result = be('git', [
-    'diff',
-    '--quiet',
-    'HEAD',
-    'HEAD~1',
-    '--',
-    sourceDir,
-  ])
+  const result = be(
+    'git',
+    ['diff', '--quiet', 'HEAD', 'HEAD~1', '--', sourceDir],
+    { nodeOptions: { stdio: ['ignore', 'inherit', 'inherit'] } },
+  )
 
   await result
   return result.exitCode === 1
@@ -27344,6 +27341,10 @@ async function hasGitChanged(sourceDir) {
  */
 async function gitForcePush(sourceDir, targetBranch, dryRun) {
   const sourcePath = external_node_path_namespaceObject.join(process.cwd(), sourceDir)
+  const o = {
+    nodeOptions: { stdio: ['ignore', 'inherit', 'inherit'] },
+    throwOnError: true,
+  }
 
   core.debug(`Changing directory to ${sourcePath}`)
   const originalCwd = process.cwd()
@@ -27358,7 +27359,7 @@ async function gitForcePush(sourceDir, targetBranch, dryRun) {
     if (dryRun) {
       core.info(`[dry run] git push -f origin HEAD:${targetBranch}`)
     } else {
-      await be('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`])
+      await be('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`], o)
     }
   } else {
     core.debug(`Initializing git repository at ${sourcePath}`)
@@ -27371,12 +27372,12 @@ git commit -m "Sync"
 git remote add origin ${REPO_URL}
 git push -f origin HEAD:${targetBranch}`)
     } else {
-      await be('git', ['init'])
-      await be('git', ['add', '.'])
-      await be('git', ['commit', '-m', 'Sync'])
-      await be('git', ['remote', 'add', 'origin', REPO_URL])
+      await be('git', ['init'], o)
+      await be('git', ['add', '.'], o)
+      await be('git', ['commit', '-m', 'Sync'], o)
+      await be('git', ['remote', 'add', 'origin', REPO_URL], o)
       core.debug(`Force pushing from to ${targetBranch}`)
-      await be('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`])
+      await be('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`], o)
       await promises_namespaceObject.rm(gitDir, { recursive: true, force: true })
     }
   }
