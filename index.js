@@ -12,6 +12,7 @@ async function main() {
   const mapLines = core.getMultilineInput('map', { required: true })
   const skipUnchangedCheck = core.getBooleanInput('skip-unchanged-check')
   const dryRun = core.getBooleanInput('dry-run')
+  const ghToken = core.getInput('token')
 
   for (const line of mapLines) {
     let [sourceDir, targetBranch] = line.split('->')
@@ -40,7 +41,7 @@ async function main() {
     }
 
     core.info(`Syncing "${sourceDir}" directory to "${targetBranch}" branch`)
-    await gitForcePush(sourceDir, targetBranch, dryRun)
+    await gitForcePush(sourceDir, targetBranch, dryRun, ghToken)
   }
 }
 
@@ -78,8 +79,9 @@ async function hasGitChanged(sourceDir) {
  * @param {string} sourceDir
  * @param {string} targetBranch
  * @param {boolean} dryRun
+ * @param {string} ghToken
  */
-async function gitForcePush(sourceDir, targetBranch, dryRun) {
+async function gitForcePush(sourceDir, targetBranch, dryRun, ghToken) {
   const sourcePath = path.join(process.cwd(), sourceDir)
   const o = {
     nodeOptions: { stdio: ['ignore', 'inherit', 'inherit'] },
@@ -125,6 +127,7 @@ git checkout ${process.env.GITHUB_REF_NAME}`)
 git init
 git config user.name github-actions[bot]
 git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+git config http.${process.env.GITHUB_SERVER_URL}.extraheader AUTHORIZATION: basic ***
 git add .
 git commit -m "Sync"
 git remote add origin ${REPO_URL}
@@ -134,6 +137,8 @@ git push -f origin HEAD:${targetBranch}`)
         await x('git', ['config', 'user.name', 'github-actions[bot]'])
         // prettier-ignore
         await x('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'])
+        // prettier-ignore
+        await x('git', ['config', `http.${process.env.GITHUB_SERVER_URL}.extraheader`, `AUTHORIZATION: basic ${ghToken}`])
         await x('git', ['add', '.'])
         await x('git', ['commit', '-m', 'Sync'])
         await x('git', ['remote', 'add', 'origin', REPO_URL])
@@ -154,7 +159,7 @@ git push -f origin HEAD:${targetBranch}`)
  * @param {boolean} inherit
  */
 async function x(command, args, inherit = true) {
-  core.startGroup(`> ${command} ${args.join(' ')}`)
+  core.startGroup(`${command} ${args.join(' ')}`)
   try {
     await exec(
       command,

@@ -16,6 +16,9 @@ inputs:
     description: 'Do not push changes to the target branch'
     required: false
     default: false
+  token:
+    description: 'Git authentication token (e.g. GH_TOKEN)'
+    default: ${{ github.token }}
 runs:
   using: 'node20'
   main: 'dist/index.js'
