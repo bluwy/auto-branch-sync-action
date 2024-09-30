@@ -1,0 +1,20 @@
+name: 'Auto Branch Sync'
+description: 'Automatically synchronize branches within the same repository'
+author: Bjorn Lu
+branding:
+  icon: refresh-cw
+  color: green
+inputs:
+  _test:
+    description: 'Test input'
+    required: true
+    default: 'test'
+runs:
+  using: "composite"
+  steps:
+    - name: Synchronize branches
+      env:
+        INPUT_WHO_TO_GREET: ${{ inputs.who-to-greet }}
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
