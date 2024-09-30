@@ -124,21 +124,22 @@ git checkout ${process.env.GITHUB_REF_NAME}`)
       if (dryRun) {
         core.info(`\
 [dry run]
-git init
+git init -b ${targetBranch}
 git config user.name github-actions[bot]
 git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-git config http.${process.env.GITHUB_SERVER_URL}.extraheader AUTHORIZATION: basic ***
+git config http.${process.env.GITHUB_SERVER_URL}/.extraheader AUTHORIZATION: basic ***
 git add .
 git commit -m "Sync"
 git remote add origin ${REPO_URL}
 git push -f origin HEAD:${targetBranch}`)
       } else {
-        await x('git', ['init'])
+        await x('git', ['init', '-b', targetBranch])
         await x('git', ['config', 'user.name', 'github-actions[bot]'])
         // prettier-ignore
         await x('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'])
+        // Custom git init requires own authorization setup (inspired from actions/checkout)
         // prettier-ignore
-        await x('git', ['config', `http.${process.env.GITHUB_SERVER_URL}.extraheader`, `AUTHORIZATION: basic ${ghToken}`])
+        await x('git', ['config', `http.${process.env.GITHUB_SERVER_URL}/.extraheader`, `AUTHORIZATION: basic ${ghToken}`])
         await x('git', ['add', '.'])
         await x('git', ['commit', '-m', 'Sync'])
         await x('git', ['remote', 'add', 'origin', REPO_URL])
@@ -159,6 +160,7 @@ git push -f origin HEAD:${targetBranch}`)
  * @param {boolean} inherit
  */
 async function x(command, args, inherit = true) {
+  // NOTE: while this may log GH_TOKEN, github seems to help auto redact it
   core.startGroup(`${command} ${args.join(' ')}`)
   try {
     await exec(
