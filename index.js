@@ -30,7 +30,11 @@ async function main() {
 
     if (skipUnchangedCheck) {
       core.debug('Skipping unchanged check')
-    } else if (!(await hasGitChanged(sourceDir))) {
+    } else if (
+      // skip if git branch exists and source directory has not changed
+      !(await isGitBranchExists(targetBranch)) &&
+      !(await hasGitChanged(sourceDir))
+    ) {
       core.info(`Skipping "${sourceDir}" directory because it has not changed`)
       continue
     }
@@ -38,6 +42,15 @@ async function main() {
     core.info(`Syncing "${sourceDir}" directory to "${targetBranch}" branch`)
     await gitForcePush(sourceDir, targetBranch, dryRun)
   }
+}
+
+/**
+ * @param {string} branch
+ */
+async function isGitBranchExists(branch) {
+  const result = exec('git', ['show-ref', '--quiet', `refs/heads/${branch}`])
+  await result
+  return result.exitCode === 0
 }
 
 /**

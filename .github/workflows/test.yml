@@ -2,13 +2,23 @@ name: Test
 
 on:
   workflow_dispatch:
+    inputs:
+      skip-unchanged-check:
+        type: boolean
+        default: false
+      dry-run:
+        type: boolean
+        default: false
   push:
     branches:
       - master
 
 env:
   ACTIONS_RUNNER_DEBUG: true
-      
+
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -22,3 +32,5 @@ jobs:
           map: |
             / -> sync/root
             /test-fixtures -> sync/fixtures
+          skip-unchanged-check: ${{ inputs.skip-unchanged-check }}
+          dry-run: ${{ inputs.dry-run }}
