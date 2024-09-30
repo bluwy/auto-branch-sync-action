@@ -6,7 +6,7 @@ Whenever the action is called with the given `map` configuration, it will force 
 
 Usecases:
 
-1. Syncing the `templates` directory to individual branches to allow quick cloning.
+1. Syncing each directory in `templates/` to individual branches to allow quick cloning.
 2. Syncing the `docs` directory to the `gh-pages` branch to update the website.
 
 See the example below for more information.

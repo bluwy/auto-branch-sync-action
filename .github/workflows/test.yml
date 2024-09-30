@@ -14,6 +14,7 @@ on:
       - master
 
 env:
+  # NOTE: doesn't seem to work
   ACTIONS_RUNNER_DEBUG: true
 
 permissions:
