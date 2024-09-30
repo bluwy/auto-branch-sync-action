@@ -27366,6 +27366,7 @@ async function gitForcePush(sourceDir, targetBranch, dryRun, ghToken) {
   process.chdir(sourcePath)
 
   const gitDir = external_node_path_namespaceObject.join(sourcePath, '.git')
+  const commitMessage = `"Sync from ${process.env.GITHUB_SHA}"`
 
   try {
     // Re-use existing git if available (e.g. root)
@@ -27379,7 +27380,7 @@ git checkout -d ${targetBranch}
 git checkout --orphan ${targetBranch}
 git config user.name github-actions[bot]
 git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-git commit -am "Sync"
+git commit -am ${commitMessage}
 git push -f origin HEAD:${targetBranch}
 git checkout ${process.env.GITHUB_REF_NAME}`)
       } else {
@@ -27388,7 +27389,7 @@ git checkout ${process.env.GITHUB_REF_NAME}`)
         await index_x('git', ['config', 'user.name', 'github-actions[bot]'])
         // prettier-ignore
         await index_x('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'])
-        await index_x('git', ['commit', '-am', 'Sync'])
+        await index_x('git', ['commit', '-am', commitMessage])
         await index_x('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`])
         await index_x('git', ['checkout', process.env.GITHUB_REF_NAME])
       }
@@ -27405,7 +27406,7 @@ git init -b ${targetBranch}
 git config user.name github-actions[bot]
 git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 git add .
-git commit -m "Sync"
+git commit -m ${commitMessage}
 git remote add origin ${REPO_URL}
 git push -f origin HEAD:${targetBranch}`)
       } else {
@@ -27414,7 +27415,7 @@ git push -f origin HEAD:${targetBranch}`)
         // prettier-ignore
         await index_x('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'])
         await index_x('git', ['add', '.'])
-        await index_x('git', ['commit', '-m', 'Sync'])
+        await index_x('git', ['commit', '-m', commitMessage])
         await index_x('git', ['remote', 'add', 'origin', repoUrl])
         core.debug(`Force pushing to "${targetBranch}" branch`)
         await index_x('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`])

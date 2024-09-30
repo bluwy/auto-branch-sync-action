@@ -93,6 +93,7 @@ async function gitForcePush(sourceDir, targetBranch, dryRun, ghToken) {
   process.chdir(sourcePath)
 
   const gitDir = path.join(sourcePath, '.git')
+  const commitMessage = `"Sync from ${process.env.GITHUB_SHA}"`
 
   try {
     // Re-use existing git if available (e.g. root)
@@ -106,7 +107,7 @@ git checkout -d ${targetBranch}
 git checkout --orphan ${targetBranch}
 git config user.name github-actions[bot]
 git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-git commit -am "Sync"
+git commit -am ${commitMessage}
 git push -f origin HEAD:${targetBranch}
 git checkout ${process.env.GITHUB_REF_NAME}`)
       } else {
@@ -115,7 +116,7 @@ git checkout ${process.env.GITHUB_REF_NAME}`)
         await x('git', ['config', 'user.name', 'github-actions[bot]'])
         // prettier-ignore
         await x('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'])
-        await x('git', ['commit', '-am', 'Sync'])
+        await x('git', ['commit', '-am', commitMessage])
         await x('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`])
         await x('git', ['checkout', process.env.GITHUB_REF_NAME])
       }
@@ -132,7 +133,7 @@ git init -b ${targetBranch}
 git config user.name github-actions[bot]
 git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 git add .
-git commit -m "Sync"
+git commit -m ${commitMessage}
 git remote add origin ${REPO_URL}
 git push -f origin HEAD:${targetBranch}`)
       } else {
@@ -141,7 +142,7 @@ git push -f origin HEAD:${targetBranch}`)
         // prettier-ignore
         await x('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'])
         await x('git', ['add', '.'])
-        await x('git', ['commit', '-m', 'Sync'])
+        await x('git', ['commit', '-m', commitMessage])
         await x('git', ['remote', 'add', 'origin', repoUrl])
         core.debug(`Force pushing to "${targetBranch}" branch`)
         await x('git', ['push', '-f', 'origin', `HEAD:${targetBranch}`])
