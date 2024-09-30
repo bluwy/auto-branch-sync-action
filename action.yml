@@ -1,5 +1,5 @@
 name: 'Auto Branch Sync'
-description: 'Automatically synchronize directories to other branches within the same repository.'
+description: 'Automatically synchronize directories to other branches within the same repository'
 author: Bjorn Lu
 branding:
   icon: refresh-cw
