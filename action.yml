@@ -5,16 +5,17 @@ branding:
   icon: refresh-cw
   color: green
 inputs:
-  _test:
-    description: 'Test input'
+  map:
+    description: 'A line-separated list following "<source-dir> -> <target-branch>" format'
     required: true
-    default: 'test'
-runs:
-  using: "composite"
-  steps:
-    - name: Synchronize branches
-      env:
-        INPUT_WHO_TO_GREET: ${{ inputs.who-to-greet }}
+  skip-unchanged-check:
+    description: 'Skip the check for unchanged files'
+    required: false
+    default: false
+  dry-run:
+    description: 'Do not push changes to the target branch'
+    required: false
+    default: false
 runs:
   using: 'node20'
   main: 'dist/index.js'
