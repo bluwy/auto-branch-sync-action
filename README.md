@@ -51,21 +51,23 @@ jobs:
         with:
           # example line-separated config:
           # 1. Maps the root of the repository to the `sync/root` branch
-          # 2. Maps the `test-fixtures` directory to the `sync/fixtures` branch
-          # 3. Maps the `test-fixtures/*` directory to the `sync/fixtures/*` branch
-          #    (e.g. `test-fixtures/bar` -> `sync/fixtures/bar`)
+          # 2. Maps the `test-fixtures` directory to the `sync/fixtures-root` branch
+          # 3. Maps the `test-fixtures/*` directory to the `sync/fixtures-sub/*` branch
+          #    (e.g. `test-fixtures/bar` -> `sync/fixtures-sub/bar`)
           # 4. Maps the `test-fixtures/**/nested` directory to the `sync/fixtures-nested/**` branch
           #    (e.g. `test-fixtures/foo/nested` -> `sync/fixtures-nested/foo`)
           map: |
             / -> sync/root
-            /test-fixtures -> sync/fixtures
-            /test-fixtures/* -> sync/fixtures/* 
+            /test-fixtures -> sync/fixtures-root
+            /test-fixtures/* -> sync/fixtures-sub/* 
             /test-fixtures/**/nested -> sync/fixtures-nested/**
           # Optional: Skip the check for unchanged files (only recommended for debugging)
           skip-unchanged-check: ${{ inputs.skip-unchanged-check == true }}
           # Optional: Dry run to see the changes without apply any git actions (only recommended for debugging)
           dry-run: ${{ inputs.dry-run == true }}
 ```
+
+The config above is used by this repo's `test.yml` to test the action. Check out the logs and branches to see it in action.
 
 ## Possible enhancements
 

@@ -32,8 +32,8 @@ jobs:
         with:
           map: |
             / -> sync/root
-            /test-fixtures -> sync/fixtures
-            /test-fixtures/* -> sync/fixtures/* 
+            /test-fixtures -> sync/fixtures-root
+            /test-fixtures/* -> sync/fixtures-sub/* 
             /test-fixtures/**/nested -> sync/fixtures-nested/**
           skip-unchanged-check: ${{ inputs.skip-unchanged-check == true }}
           dry-run: ${{ inputs.dry-run == true }}

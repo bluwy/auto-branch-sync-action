@@ -28214,7 +28214,7 @@ async function gitForcePush(sourceDir, targetBranch, dryRun, ghToken) {
   process.chdir(sourcePath)
 
   const gitDir = external_node_path_namespaceObject.join(sourcePath, '.git')
-  const commitMessage = `"Sync from ${process.env.GITHUB_SHA}"`
+  const commitMessage = `Sync from ${process.env.GITHUB_SHA}`
 
   try {
     // Re-use existing git if available (e.g. root)
@@ -28228,7 +28228,7 @@ git checkout -d ${targetBranch}
 git checkout --orphan ${targetBranch}
 git config user.name github-actions[bot]
 git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-git commit -am ${commitMessage}
+git commit -am "${commitMessage}"
 git push -f origin HEAD:${targetBranch}
 git checkout ${process.env.GITHUB_REF_NAME}`)
       } else {
@@ -28254,7 +28254,7 @@ git init -b ${targetBranch}
 git config user.name github-actions[bot]
 git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 git add .
-git commit -m ${commitMessage}
+git commit -m "${commitMessage}"
 git remote add origin ${REPO_URL}
 git push -f origin HEAD:${targetBranch}`)
       } else {
