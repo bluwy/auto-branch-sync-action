@@ -28158,7 +28158,9 @@ async function main() {
       !(await hasGitChanged(sourceDir))
     ) {
       core.info(
-        `Skip sync "${sourceDir}" directory to "${targetBranch}" branch as unchanged`,
+        yellow(
+          `Skip sync "${sourceDir}" directory to "${targetBranch}" branch as unchanged`,
+        ),
       )
       previousLineSkipped = true
       continue
@@ -28166,13 +28168,13 @@ async function main() {
 
     // Add new line spacing between the last skip and the next sync so it's easier to read
     if (previousLineSkipped) {
-      core.info()
+      console.log()
       previousLineSkipped = false
     }
 
-    core.info(`Sync "${sourceDir}" directory to "${targetBranch}" branch`)
+    core.info(blue(`Sync "${sourceDir}" directory to "${targetBranch}" branch`))
     await gitForcePush(sourceDir, targetBranch, dryRun, ghToken)
-    core.info()
+    console.log()
   }
 }
 
@@ -28399,5 +28401,19 @@ function getParentDirs(sourceDir, cwd) {
     parentDirs.push(external_node_path_namespaceObject.join(cwd, segments.slice(0, i + 1).join('/'), '/'))
   }
   return parentDirs
+}
+
+/**
+ * @param {string} str
+ */
+function blue(str) {
+  return `\u001b[34m${str}\u001b[0m`
+}
+
+/**
+ * @param {string} str
+ */
+function yellow(str) {
+  return `\u001b[33m${str}\u001b[0m`
 }
 
