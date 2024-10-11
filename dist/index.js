@@ -28126,6 +28126,7 @@ async function main() {
   const skipUnchangedCheck = core.getBooleanInput('skip-unchanged-check')
   const dryRun = core.getBooleanInput('dry-run')
   const ghToken = core.getInput('token')
+  let previousLineSkipped = false
 
   for (let i = 0; i < mapLines.length; i++) {
     const line = mapLines[i]
@@ -28156,13 +28157,22 @@ async function main() {
       !(await isGitBranchExists(targetBranch)) &&
       !(await hasGitChanged(sourceDir))
     ) {
-      core.info(`Skip "${sourceDir}" directory as unchanged`)
+      core.info(
+        `Skip sync "${sourceDir}" directory to "${targetBranch}" branch as unchanged`,
+      )
+      previousLineSkipped = true
       continue
+    }
+
+    // Add new line spacing between the last skip and the next sync so it's easier to read
+    if (previousLineSkipped) {
+      core.info()
+      previousLineSkipped = false
     }
 
     core.info(`Sync "${sourceDir}" directory to "${targetBranch}" branch`)
     await gitForcePush(sourceDir, targetBranch, dryRun, ghToken)
-    console.log()
+    core.info()
   }
 }
 
