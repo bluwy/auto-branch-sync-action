@@ -1,0 +1,39 @@
+name: Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip-unchanged-check:
+        type: boolean
+        default: false
+      dry-run:
+        type: boolean
+        default: false
+  push:
+    branches:
+      - master
+
+env:
+  # NOTE: doesn't seem to work
+  ACTIONS_RUNNER_DEBUG: true
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: ./
+        with:
+          map: |
+            / -> sync/root
+            /test-fixtures -> sync/fixtures-root
+            /test-fixtures/* -> sync/fixtures-sub/* 
+            /test-fixtures/**/nested -> sync/fixtures-nested/**
+          skip-unchanged-check: ${{ inputs.skip-unchanged-check == true }}
+          dry-run: ${{ inputs.dry-run == true }}
