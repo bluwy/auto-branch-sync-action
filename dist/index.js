@@ -28305,12 +28305,7 @@ async function index_x(command, args, inherit = true) {
  * @param {string} targetBranch
  */
 function expandGlobLine(sourceDir, targetBranch) {
-  const regex = new RegExp(
-    sourceDir
-      .replace(/\*\*\//g, '(?:(.*)/)?')
-      .replace(/\*\*/g, '(.*)')
-      .replace(/\*/g, '([^/]+)'),
-  )
+  const regex = createGlobalRegExp(sourceDir)
 
   // Get parent directories before the first * so we can use it to exclude out directories earlier
   const sourceParentDirs = getParentDirs(sourceDir, process.cwd())
@@ -28324,7 +28319,8 @@ function expandGlobLine(sourceDir, targetBranch) {
       return !sourceParentDirs.some((p) => dirPath.startsWith(p))
     })
     .filter((p, isDir) => {
-      return isDir && regex.test('/' + p.replace(/\\/g, '/'))
+      // NOTE: directory path always have a trailing slash
+      return isDir && p !== '.' && regex.test('/' + p.replace(/\\/g, '/'))
     })
     .crawl(process.cwd())
     .sync()
@@ -28356,6 +28352,22 @@ function expandGlobLine(sourceDir, targetBranch) {
     `Injecting additional mappings:\n${additionalLinesToInject.join('\n')}`,
   )
   return additionalLinesToInject
+}
+
+/**
+ * @param {string} sourceDir
+ */
+function createGlobalRegExp(sourceDir) {
+  // Ensure starting and ending slash to easier match with fdir
+  if (sourceDir[0] !== '/') sourceDir = '/' + sourceDir
+  if (sourceDir[sourceDir.length - 1] !== '/') sourceDir += '/'
+
+  const replaced = sourceDir
+    .replace(/\*\*\//g, '(?:(.*)/)?')
+    .replace(/\*\*/g, '(.*)')
+    .replace(/\*/g, '([^/]+)')
+
+  return new RegExp(`^${replaced}$`)
 }
 
 /**
